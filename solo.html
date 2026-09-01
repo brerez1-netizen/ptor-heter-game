@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1420">
+<title>פטור או היתר - תרגול עצמי</title>
+<style>
+  :root{
+    --bg:#0e1420; --panel:#18202f; --panel2:#1f2a3d; --line:#2c3a52;
+    --txt:#eaf0fa; --dim:#93a4bf; --accent:#f0b429; --ok:#28c076; --bad:#e5484d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    background:var(--bg);color:var(--txt);min-height:100vh;
+    font-family:"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column;
+  }
+  .wrap{flex:1;display:flex;flex-direction:column;padding:14px;gap:12px;max-width:640px;
+        width:100%;margin:0 auto}
+
+  /* ---------- סרגל התקדמות ---------- */
+  .top{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--panel);
+       border-bottom:1px solid var(--line);flex:none;position:sticky;top:0;z-index:5}
+  .top .where{font-size:14px;color:var(--dim)}
+  .top .round{background:var(--panel2);border:1px solid var(--line);border-radius:14px;
+              padding:3px 11px;font-size:13px}
+  .top .sp{flex:1}
+  .top .pts{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+  .top .clock{font-size:19px;font-weight:700;min-width:36px;text-align:center;
+              font-variant-numeric:tabular-nums}
+  .top .clock.low{color:var(--bad)}
+  .prog{height:5px;background:var(--panel2);flex:none;position:sticky;top:43px;z-index:5}
+  .prog i{display:block;height:100%;background:var(--accent);transition:width .4s ease}
+
+  /* ---------- כרטיס המקרה ---------- */
+  .fig{width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:var(--panel2);
+       max-height:34vh}
+  .fig img{width:100%;height:100%;object-fit:cover;display:block}
+  .ctitle{font-size:20px;font-weight:700}
+  .cdesc{font-size:16px;line-height:1.5;color:#c6d3e6}
+  .qtext{font-size:20px;font-weight:700;line-height:1.4}
+
+  .answers{display:flex;flex-direction:column;gap:10px}
+  .ans{
+    display:flex;gap:11px;align-items:flex-start;text-align:start;width:100%;
+    background:var(--panel);border:2px solid var(--line);border-radius:12px;
+    padding:13px 14px;font-size:16px;line-height:1.4;font-weight:600;color:var(--txt);
+    font-family:inherit;cursor:pointer;
+  }
+  .ans .n{flex:none;width:28px;height:28px;border-radius:7px;background:var(--panel2);
+          display:flex;align-items:center;justify-content:center;font-size:15px}
+  .ans.right{border-color:var(--ok);background:rgba(40,192,118,.15)}
+  .ans.right .n{background:var(--ok);color:#06210f}
+  .ans.wrong{border-color:var(--bad);background:rgba(229,72,77,.15)}
+  .ans.wrong .n{background:var(--bad);color:#2a0708}
+  .ans.mute{opacity:.4}
+
+  .verdict{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700}
+  .verdict .d{font-size:17px;font-variant-numeric:tabular-nums}
+  .explain{background:var(--panel);border-inline-start:4px solid var(--accent);border-radius:10px;
+           padding:13px 14px;font-size:16px;line-height:1.6;color:#dce6f5}
+
+  button.go{
+    font-family:inherit;font-size:18px;font-weight:700;padding:15px;border:none;
+    border-radius:12px;background:var(--accent);color:#231702;width:100%;cursor:pointer;
+  }
+  button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+
+  /* ---------- מסכי פתיחה וסיום ---------- */
+  .hero{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;text-align:center}
+  .hero h1{font-size:30px;color:var(--accent)}
+  .hero p{font-size:16px;line-height:1.6;color:var(--dim)}
+  .rules{background:var(--panel);border-radius:12px;padding:14px 16px;text-align:start;
+         font-size:15px;line-height:1.75;color:#c6d3e6}
+  .rules b{color:var(--txt)}
+  .big{font-size:46px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  .rows{display:flex;flex-direction:column;gap:8px}
+  .row{display:flex;align-items:center;gap:10px;background:var(--panel);border-radius:10px;
+       padding:11px 14px;font-size:16px}
+  .row .lbl{flex:1;text-align:start}
+  .row .v{font-weight:700;font-variant-numeric:tabular-nums}
+  .meter{height:7px;border-radius:4px;background:var(--panel2);overflow:hidden;width:82px;flex:none}
+  .meter i{display:block;height:100%;background:var(--accent)}
+  .note{font-size:14px;color:var(--dim);line-height:1.6}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top hidden" id="top">
+  <span class="where" id="where"></span>
+  <span class="round" id="round"></span>
+  <span class="sp"></span>
+  <span class="clock" id="clock"></span>
+  <span class="pts" id="pts">0</span>
+</div>
+<div class="prog hidden" id="progwrap"><i id="prog" style="width:0%"></i></div>
+
+<div class="wrap" id="stage"></div>
+
+<script src="js/gameData.js"></script>
+<script>
+/* =====================================================================
+   תרגול עצמי. בלי Firebase ובלי שרת: הכול רץ בטלפון, וההתקדמות נשמרת
+   ב-localStorage כדי שאפשר יהיה לצאת באמצע ולחזור.
+   ===================================================================== */
+const G = window.gameData;
+const CFG = G.meta;
+const KEY = "ptorHeter.solo";
+const BEST = "ptorHeter.solo.best";
+
+const FLOW = [];
+G.cases.forEach((c, ci) => c.questions.forEach((q, qi) => FLOW.push({ ci, qi, c, q })));
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+let st = null;   // { idx, score, log: [{opt, ms, correct, pts}], perm }
+let tick = null, startedAt = 0;
+
+/* ---------------------- שמירה מקומית ---------------------- */
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+function load() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } }
+function clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+function best() { try { return parseInt(localStorage.getItem(BEST) || "0", 10) || 0; } catch (e) { return 0; } }
+function setBest(v) { try { localStorage.setItem(BEST, String(v)); } catch (e) {} }
+
+function shuffled(n) {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+/* ---------------------- מסך פתיחה ---------------------- */
+function screenStart() {
+  chrome(false);
+  const saved = load();
+  const b = best();
+  $("stage").innerHTML = `
+    <div class="hero">
+      <h1>פטור או היתר</h1>
+      <p>תחיקת הבנייה · שיעור 9 · פטור מהיתר בנייה</p>
+      <div class="rules">
+        עשרה מקרים מהשטח. לכל מקרה שלוש שאלות: <b>מה מעמד העבודה</b>, <b>מה התנאי שקובע</b>,
+        ו<b>מה חובת הדיווח</b>.<br>
+        יש ${CFG.questionSeconds} שניות לשאלה. תשובה נכונה שווה יותר ככל שהיא מהירה יותר,
+        תשובה שגויה מורידה ${Math.abs(CFG.wrongPenalty)} נקודות, ומי שלא הספיק לא מפסיד כלום.<br>
+        אחרי כל תשובה מופיע ההסבר, וזה החלק שבאמת שווה לקרוא.
+      </div>
+      ${b ? `<div class="note">השיא שלך עד עכשיו: <b style="color:var(--accent)">${b}</b> נקודות</div>` : ""}
+      ${saved && saved.idx > 0 && saved.idx < FLOW.length
+        ? `<button class="go" id="btnResume">להמשיך מאיפה שהפסקת (שאלה ${saved.idx + 1})</button>
+           <button class="go ghost" id="btnFresh">להתחיל מחדש</button>`
+        : `<button class="go" id="btnStart">מתחילים</button>`}
+    </div>`;
+  if ($("btnStart")) $("btnStart").onclick = () => begin(true);
+  if ($("btnResume")) $("btnResume").onclick = () => { st = load(); openQ(); };
+  if ($("btnFresh")) $("btnFresh").onclick = () => begin(true);
+}
+
+function begin(fresh) {
+  if (fresh) clear();
+  st = { idx: 0, score: 0, log: [], perm: null };
+  openQ();
+}
+
+/* ---------------------- שאלה ---------------------- */
+function chrome(on) {
+  $("top").classList.toggle("hidden", !on);
+  $("progwrap").classList.toggle("hidden", !on);
+}
+
+function openQ() {
+  const it = FLOW[st.idx];
+  if (!it) return screenEnd();
+  st.perm = shuffled(it.q.options.length);
+  save();
+  chrome(true);
+  $("where").textContent = `מקרה ${it.ci + 1} מתוך ${G.cases.length}`;
+  $("round").textContent = `סבב ${it.q.round}: ${G.rounds[it.q.round - 1].name}`;
+  $("pts").textContent = st.score;
+  $("prog").style.width = (st.idx / FLOW.length) * 100 + "%";
+
+  // התמונה והתיאור מוצגים רק בשאלה הראשונה של כל מקרה, כדי לא לבזבז מסך
+  const head = it.qi === 0
+    ? `<div class="fig"><img src="${it.c.image}" alt="${esc(it.c.title)}"></div>
+       <div class="ctitle">${esc(it.c.title)}</div>
+       <div class="cdesc">${esc(it.c.description)}</div>`
+    : `<div class="ctitle">${esc(it.c.title)}</div>
+       <div class="cdesc">${esc(it.c.description)}</div>`;
+
+  $("stage").innerHTML = head +
+    `<div class="qtext">${esc(it.q.q)}</div>
+     <div class="answers" id="answers">` +
+    st.perm.map((orig, i) =>
+      `<button class="ans" data-i="${i}"><span class="n">${i + 1}</span><span>${esc(it.q.options[orig])}</span></button>`
+    ).join("") + `</div>`;
+
+  $("answers").querySelectorAll(".ans").forEach((b) => {
+    b.onclick = () => answer(parseInt(b.dataset.i, 10));
+  });
+  startedAt = Date.now();
+  startClock();
+}
+
+function startClock() {
+  stopClock();
+  const ends = startedAt + CFG.questionSeconds * 1000;
+  const paint = () => {
+    const left = Math.max(0, Math.ceil((ends - Date.now()) / 1000));
+    $("clock").textContent = left;
+    $("clock").classList.toggle("low", left <= 5);
+    if (left <= 0) { stopClock(); answer(null); }
+  };
+  paint();
+  tick = setInterval(paint, 200);
+}
+function stopClock() { if (tick) { clearInterval(tick); tick = null; } $("clock").textContent = ""; }
+
+/* ---------------------- תשובה וחשיפה ---------------------- */
+function answer(opt) {
+  stopClock();
+  const it = FLOW[st.idx];
+  const rightSlot = st.perm.indexOf(it.q.correct);
+  const ms = Math.min(CFG.questionSeconds * 1000, Date.now() - startedAt);
+  let pts = 0, correct = false;
+  if (opt !== null) {
+    correct = opt === rightSlot;
+    if (correct) {
+      const usedFrac = Math.min(1, ms / (CFG.questionSeconds * 1000));
+      pts = CFG.basePoints + Math.round(CFG.maxSpeedBonus * Math.exp(-CFG.speedDecay * usedFrac));
+    } else {
+      pts = CFG.wrongPenalty;
+    }
+  }
+  st.score += pts;
+  st.log[st.idx] = { opt, ms, correct, pts, round: it.q.round, ci: it.ci };
+  save();
+  $("pts").textContent = st.score;
+
+  $("stage").querySelectorAll(".ans").forEach((b, i) => {
+    b.disabled = true;
+    b.onclick = null;
+    if (i === rightSlot) b.classList.add("right");
+    else if (i === opt) b.classList.add("wrong");
+    else b.classList.add("mute");
+  });
+
+  const line = opt === null
+    ? `<div class="verdict"><span>⌛</span><span>נגמר הזמן</span><span class="d" style="color:var(--dim)">0</span></div>`
+    : `<div class="verdict"><span>${correct ? "✅" : "❌"}</span><span>${correct ? "נכון" : "לא נכון"}</span>
+       <span class="d" style="color:${correct ? "var(--ok)" : "var(--bad)"}">${pts > 0 ? "+" : ""}${pts}</span></div>`;
+
+  $("stage").insertAdjacentHTML("beforeend",
+    line + `<div class="explain">${esc(it.q.explanation)}</div>
+    <button class="go" id="btnNext">${st.idx + 1 >= FLOW.length ? "לסיכום" : "הבאה"}</button>`);
+  $("btnNext").onclick = () => { st.idx++; save(); openQ(); };
+  $("btnNext").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+/* ---------------------- סיכום ---------------------- */
+function screenEnd() {
+  stopClock();
+  chrome(false);
+  const done = st.log.filter(Boolean);
+  const right = done.filter((r) => r.correct);
+  const times = right.map((r) => r.ms);
+  const avg = times.length ? (times.reduce((a, b) => a + b, 0) / times.length / 1000) : 0;
+  const byRound = G.rounds.map((r) => {
+    const rows = done.filter((x) => x.round === r.n);
+    const ok = rows.filter((x) => x.correct).length;
+    return { name: r.name, ok, total: rows.length };
+  });
+  const b = best();
+  const isBest = st.score > b;
+  if (isBest) setBest(st.score);
+
+  const verdict = right.length >= 26
+    ? "אתה שולט בחומר. הפער בין 26 ל-30 הוא בדרך כלל בסבב הדיווח, ושם שווה לחזור על התקנות עצמן."
+    : right.length >= 20
+    ? "בסיס טוב. תסתכל למטה איזה סבב הפיל אותך, ותחזור עליו."
+    : "שווה לעבור שוב על השיעור ואז לחזור לכאן. במיוחד על ההבחנה בין מה שפטור לגמרי לבין מה שפטור בתנאי.";
+
+  $("stage").innerHTML = `
+    <div class="hero">
+      <h1>${isBest && b ? "שיא חדש" : "סיכום"}</h1>
+      <div class="big">${st.score}</div>
+      <p>${right.length} תשובות נכונות מתוך ${FLOW.length}${avg ? ` · זמן תגובה ממוצע ${avg.toFixed(1)} שניות` : ""}</p>
+      <div class="rows">
+        ${byRound.map((r) => `<div class="row">
+          <span class="lbl">${esc(r.name)}</span>
+          <span class="meter"><i style="width:${r.total ? (r.ok / r.total) * 100 : 0}%"></i></span>
+          <span class="v">${r.ok}/${r.total}</span>
+        </div>`).join("")}
+      </div>
+      <div class="note">${verdict}</div>
+      ${!isBest && b ? `<div class="note">השיא שלך: ${b}</div>` : ""}
+      <button class="go" id="btnAgain">עוד סיבוב</button>
+    </div>`;
+  $("btnAgain").onclick = () => begin(true);
+  clear();
+}
+
+screenStart();
+</script>
+</body>
+</html>
