@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1420">
+<title>פטור או היתר</title>
+<style>
+  :root{
+    --bg:#0e1420; --panel:#18202f; --panel2:#1f2a3d; --line:#2c3a52;
+    --txt:#eaf0fa; --dim:#93a4bf; --accent:#f0b429; --ok:#28c076; --bad:#e5484d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    background:var(--bg);color:var(--txt);min-height:100vh;
+    font-family:"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column;
+  }
+  .wrap{flex:1;display:flex;flex-direction:column;padding:16px;gap:14px}
+  h1{font-size:26px;color:var(--accent);text-align:center}
+  .sub{font-size:15px;color:var(--dim);text-align:center;margin-top:-6px}
+
+  label{font-size:15px;color:var(--dim);display:block;margin-bottom:6px}
+  input[type=text]{
+    width:100%;padding:14px;font-size:19px;font-family:inherit;border-radius:10px;
+    border:1px solid var(--line);background:var(--panel);color:var(--txt);
+  }
+  .colors{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .sw{
+    aspect-ratio:1;border-radius:10px;border:3px solid transparent;cursor:pointer;
+    position:relative;
+  }
+  .sw.sel{border-color:#fff;transform:scale(1.06)}
+  .sw.taken{opacity:.22;cursor:not-allowed}
+  .sw.taken::after{content:"";position:absolute;inset:38% 12%;border-top:3px solid #000;transform:rotate(-20deg)}
+
+  button{
+    font-family:inherit;font-size:19px;font-weight:700;padding:16px;border:none;
+    border-radius:12px;background:var(--accent);color:#231702;width:100%;cursor:pointer;
+  }
+  button:disabled{opacity:.45}
+
+  /* ---------- סרגל מצב ---------- */
+  .status{
+    display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);
+    border-bottom:1px solid var(--line);
+  }
+  .me{padding:5px 13px;border-radius:16px;font-size:15px;font-weight:700;color:#0d1420}
+  .score{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-inline-start:auto}
+  .clock{
+    font-size:22px;font-weight:700;min-width:44px;text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .clock.low{color:var(--bad)}
+
+  /* ---------- עמודת הניקוד האישית ---------- */
+  .mybar{
+    height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;flex:none;
+  }
+  .mybar i{display:block;height:100%;border-radius:5px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+
+  .qhead{font-size:14px;color:var(--dim);text-align:center}
+  .qtext{font-size:22px;font-weight:700;line-height:1.4;text-align:center;padding:4px 0}
+  .answers{display:flex;flex-direction:column;gap:11px;flex:1}
+  .ans{
+    flex:1;min-height:64px;display:flex;gap:12px;align-items:center;text-align:start;
+    background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 14px;
+    font-size:17px;line-height:1.35;font-weight:600;color:var(--txt);
+  }
+  .ans .n{
+    flex:none;width:32px;height:32px;border-radius:8px;background:var(--panel2);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+  }
+  .ans.picked{border-color:var(--accent);background:rgba(240,180,41,.16)}
+  .ans:disabled{opacity:1}
+  .ans.wait{opacity:.4}
+
+  .big{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;text-align:center;padding:20px;
+  }
+  .big .ic{font-size:64px}
+  .big .t{font-size:26px;font-weight:700}
+  .big .d{font-size:17px;color:var(--dim);line-height:1.5}
+  .delta{font-size:38px;font-weight:700}
+  .delta.up{color:var(--ok)} .delta.down{color:var(--bad)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ===================== הצטרפות ===================== -->
+<div class="wrap" id="join">
+  <h1>פטור או היתר</h1>
+  <div class="sub">תחיקת הבנייה · שיעור 9</div>
+  <div>
+    <label for="nm">השם שלך</label>
+    <input type="text" id="nm" maxlength="14" autocomplete="off" placeholder="איך שיופיע על הלוח">
+  </div>
+  <div>
+    <label>הצבע של העמודה שלך</label>
+    <div class="colors" id="colors"></div>
+  </div>
+  <button id="btnJoin">מצטרף</button>
+  <div class="sub" id="joinmsg"></div>
+</div>
+
+<!-- ===================== משחק ===================== -->
+<div id="game" class="hidden" style="flex:1;display:flex;flex-direction:column">
+  <div class="status">
+    <span class="me" id="me"></span>
+    <span class="clock" id="clock"></span>
+    <span class="score" id="score">0</span>
+  </div>
+  <div class="mybar"><i id="mybar" style="width:0%"></i></div>
+  <div class="wrap" id="stage"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+/* =====================================================================
+   שלט הטלפון. הוא לא טוען את gameData ולא יודע מה התשובה הנכונה:
+   הוא מציג רק מה שמסך המרצה כתב ל-Firebase, ומחזיר את הבחירה ואת הזמן.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCN3vH0UjDsDEErNHJLc22jrWQNTlMRXTU",
+  databaseURL: "https://erez-ptor-heter-game-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "erez-ptor-heter-game",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const PALETTE = [
+  "#f0b429","#e5484d","#28c076","#4c9aff","#c05cf0","#ff7a45",
+  "#00c2c7","#f25f9c","#8bc34a","#ffd166","#7a6bff","#a1e3ff",
+];
+const LS = "ptorHeter.pid";
+
+let pid = null, me = null, cur = null, tick = null, answeredIdx = -1, chosen = null;
+let takenColors = [];
+const $ = (id) => document.getElementById(id);
+
+/* ---------------------- בחירת צבע ---------------------- */
+let color = PALETTE[0];
+function paintColors() {
+  $("colors").innerHTML = PALETTE.map((c) => {
+    const t = takenColors.includes(c) && c !== color;
+    return `<div class="sw ${c === color ? "sel" : ""} ${t ? "taken" : ""}" data-c="${c}" style="background:${c}"></div>`;
+  }).join("");
+}
+$("colors").onclick = (e) => {
+  const sw = e.target.closest(".sw");
+  if (!sw || sw.classList.contains("taken")) return;
+  color = sw.dataset.c;
+  paintColors();
+};
+paintColors();
+
+db.ref("players").on("value", (s) => {
+  const all = s.val() || {};
+  takenColors = Object.values(all).map((p) => p.color);
+  if (!pid) { if (takenColors.includes(color)) { color = PALETTE.find((c) => !takenColors.includes(c)) || color; } paintColors(); }
+  if (pid && all[pid]) { me = all[pid]; paintMe(); }
+  if (pid && !all[pid]) { // המרצה עשה איפוס עמוק
+    localStorage.removeItem(LS); location.reload();
+  }
+});
+
+/* ---------------------- הצטרפות ---------------------- */
+$("btnJoin").onclick = () => {
+  const name = $("nm").value.trim();
+  if (name.length < 2) { $("joinmsg").textContent = "צריך שם באורך שתי אותיות לפחות"; return; }
+  if (takenColors.includes(color)) { $("joinmsg").textContent = "הצבע הזה כבר נתפס, תבחר אחר"; return; }
+  $("btnJoin").disabled = true;
+  const ref = db.ref("players").push();
+  pid = ref.key;
+  ref.set({ name, color, score: 0, joinedAt: firebase.database.ServerValue.TIMESTAMP })
+    .then(() => { localStorage.setItem(LS, pid); enterGame(); })
+    .catch(() => { $("btnJoin").disabled = false; $("joinmsg").textContent = "ההצטרפות נכשלה, נסה שוב"; });
+};
+
+// חזרה אחרי רענון דף באמצע המשחק
+(function restore() {
+  const saved = localStorage.getItem(LS);
+  if (!saved) return;
+  db.ref("players/" + saved).once("value").then((s) => {
+    if (!s.exists()) { localStorage.removeItem(LS); return; }
+    pid = saved; me = s.val(); color = me.color; enterGame();
+  });
+})();
+
+function enterGame() {
+  $("join").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  paintMe();
+  render();
+}
+function paintMe() {
+  if (!me) return;
+  $("me").textContent = me.name;
+  $("me").style.background = me.color;
+  $("score").textContent = me.score || 0;
+  $("mybar").style.background = me.color;
+  $("mybar").style.width = Math.max(0, Math.min(100, ((me.score || 0) / 3000) * 100)) + "%";
+}
+
+/* ---------------------- מצב המשחק ---------------------- */
+db.ref("game").on("value", (s) => { cur = s.val() || { state: "lobby" }; render(); });
+
+function render() {
+  if (!pid) return;
+  const st = (cur && cur.state) || "lobby";
+
+  if (st === "lobby") {
+    stopClock();
+    $("clock").textContent = "";
+    $("stage").innerHTML = `<div class="big">
+      <div class="ic">⏳</div>
+      <div class="t">אתה בפנים</div>
+      <div class="d">מחכים שכולם יצטרפו. השאלה הראשונה תעלה על המסך בעוד רגע.</div>
+    </div>`;
+    return;
+  }
+
+  if (st === "finished") {
+    stopClock();
+    $("clock").textContent = "";
+    $("stage").innerHTML = `<div class="big">
+      <div class="ic">🏁</div>
+      <div class="t">סיימנו</div>
+      <div class="d">הניקוד הסופי שלך: <b>${me ? me.score || 0 : 0}</b><br>התוצאות והתארים על המסך הגדול.</div>
+    </div>`;
+    return;
+  }
+
+  if (st === "reveal") {
+    stopClock();
+    $("clock").textContent = "";
+    const a = me && me.answers && me.answers["q" + cur.idx];
+    if (!a || typeof a.opt !== "number") {
+      $("stage").innerHTML = `<div class="big">
+        <div class="ic">⌛</div><div class="t">לא הספקת</div>
+        <div class="d">בלי ניקוד ובלי קנס. השאלה הבאה כבר בדרך.</div></div>`;
+    } else {
+      const good = a.correct;
+      $("stage").innerHTML = `<div class="big">
+        <div class="ic">${good ? "✅" : "❌"}</div>
+        <div class="t">${good ? "נכון" : "לא נכון"}</div>
+        <div class="delta ${good ? "up" : "down"}">${(a.pts || 0) > 0 ? "+" : ""}${a.pts || 0}</div>
+        <div class="d">${good ? "ההסבר על המסך הגדול" : "שווה להקשיב להסבר על המסך הגדול"}</div>
+      </div>`;
+    }
+    return;
+  }
+
+  /* ---- שאלה פתוחה ---- */
+  if (answeredIdx !== cur.idx) { chosen = null; }
+  const already = me && me.answers && me.answers["q" + cur.idx];
+  if (already && typeof already.opt === "number") {
+    stopClock();
+    $("stage").innerHTML = `<div class="big">
+      <div class="ic">📨</div><div class="t">התשובה נקלטה</div>
+      <div class="d">בחרת בתשובה ${already.opt + 1}. עכשיו מחכים לשאר הכיתה.</div></div>`;
+    return;
+  }
+
+  $("stage").innerHTML =
+    `<div class="qhead">מקרה ${cur.caseNo} מתוך ${cur.caseTotal} · ${esc(cur.caseTitle)} · סבב ${cur.round}: ${esc(cur.roundName)}</div>
+     <div class="qtext">${esc(cur.q)}</div>
+     <div class="answers">` +
+    (cur.options || []).map((o, i) =>
+      `<button class="ans" data-i="${i}"><span class="n">${i + 1}</span><span>${esc(o)}</span></button>`
+    ).join("") +
+    `</div>`;
+
+  $("stage").querySelectorAll(".ans").forEach((b) => {
+    b.onclick = () => answer(parseInt(b.dataset.i, 10), b);
+  });
+  startClock();
+}
+
+function answer(opt, btn) {
+  if (!cur || cur.state !== "question") return;
+  const idx = cur.idx;
+  const elapsed = cur.seconds * 1000 - Math.max(0, cur.endsAt - Date.now());
+  answeredIdx = idx;
+  chosen = opt;
+  btn.classList.add("picked");
+  $("stage").querySelectorAll(".ans").forEach((b) => { b.disabled = true; if (b !== btn) b.classList.add("wait"); });
+  if (navigator.vibrate) navigator.vibrate(30);
+  db.ref(`players/${pid}/answers/q${idx}`).set({
+    opt,
+    ms: Math.max(0, Math.min(cur.seconds * 1000, elapsed)),
+  });
+}
+
+/* ---------------------- שעון ---------------------- */
+function startClock() {
+  stopClock();
+  tick = setInterval(() => {
+    const left = Math.max(0, Math.ceil((cur.endsAt - Date.now()) / 1000));
+    $("clock").textContent = left;
+    $("clock").classList.toggle("low", left <= 5);
+    if (left <= 0) stopClock();
+  }, 200);
+}
+function stopClock() { if (tick) { clearInterval(tick); tick = null; } }
+
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+</script>
+</body>
+</html>

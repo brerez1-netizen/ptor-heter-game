@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>פטור או היתר - מסך המרצה</title>
+<style>
+  :root{
+    --bg:#0e1420; --panel:#18202f; --panel2:#1f2a3d; --line:#2c3a52;
+    --txt:#eaf0fa; --dim:#93a4bf; --accent:#f0b429; --ok:#28c076; --bad:#e5484d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;
+    font-family:"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column;
+  }
+
+  /* ---------- סרגל עליון ---------- */
+  header{
+    display:flex;align-items:center;gap:18px;padding:10px 20px;
+    background:var(--panel);border-bottom:1px solid var(--line);flex:none;
+  }
+  .brand{font-size:22px;font-weight:700;color:var(--accent)}
+  .crumb{font-size:16px;color:var(--dim)}
+  .roundtag{
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:4px 14px;font-size:15px;
+  }
+  .roundtag:empty{display:none}
+  .spacer{flex:1}
+  .timer{
+    font-size:34px;font-weight:700;min-width:78px;text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .timer.low{color:var(--bad)}
+  .answered{font-size:16px;color:var(--dim)}
+
+  /* ---------- אזור מרכזי ---------- */
+  main{flex:1;display:flex;min-height:0}
+  .pane{padding:18px 22px;overflow:hidden;display:flex;flex-direction:column}
+  .left{width:38%;border-inline-start:1px solid var(--line)}
+  .right{flex:1}
+
+  .casefig{
+    width:100%;flex:1;min-height:0;border-radius:12px;overflow:hidden;
+    background:var(--panel2);display:flex;align-items:center;justify-content:center;
+  }
+  .casefig img{width:100%;height:100%;object-fit:cover}
+  .casetitle{font-size:24px;font-weight:700;margin:12px 0 6px}
+  .casedesc{font-size:18px;line-height:1.55;color:#cbd6e8}
+
+  .qtext{font-size:30px;font-weight:700;line-height:1.35;margin-bottom:18px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .opt{
+    background:var(--panel);border:2px solid var(--line);border-radius:12px;
+    padding:14px 16px;font-size:19px;line-height:1.4;display:flex;gap:12px;align-items:flex-start;
+  }
+  .opt .num{
+    flex:none;width:30px;height:30px;border-radius:8px;background:var(--panel2);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;
+  }
+  .opt.right{border-color:var(--ok);background:rgba(40,192,118,.14)}
+  .opt.right .num{background:var(--ok);color:#06210f}
+  .opt.dim{opacity:.42}
+  .explain{
+    margin-top:16px;background:var(--panel);border-inline-start:4px solid var(--accent);
+    border-radius:10px;padding:14px 16px;font-size:18px;line-height:1.6;color:#dce6f5;
+  }
+
+  /* ---------- עמודות הניקוד ---------- */
+  .bars{
+    flex:none;height:210px;background:var(--panel);border-top:1px solid var(--line);
+    display:flex;align-items:flex-end;justify-content:center;gap:8px;
+    padding:10px 16px 8px;overflow-x:auto;
+  }
+  .bar{flex:1;min-width:44px;max-width:110px;display:flex;flex-direction:column;
+       align-items:center;justify-content:flex-end;height:100%}
+  .bar .val{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:3px;
+            display:flex;gap:5px;align-items:baseline;white-space:nowrap}
+  .bar .tick{font-size:13px;font-weight:700}
+  .bar .col{
+    width:100%;border-radius:7px 7px 0 0;min-height:4px;
+    transition:height .6s cubic-bezier(.22,1,.36,1);position:relative;
+  }
+  .bar .col.pulse{box-shadow:0 0 0 3px rgba(255,255,255,.55)}
+  .bar .nm{
+    font-size:13px;color:var(--dim);margin-top:5px;max-width:100%;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  /* ---------- לובי ---------- */
+  #lobby{flex:1;display:flex;align-items:center;justify-content:center;gap:60px;padding:30px}
+  .joinbox{text-align:center}
+  .joinbox h1{font-size:46px;color:var(--accent);margin-bottom:6px}
+  .joinbox p{font-size:20px;color:var(--dim);margin-bottom:18px}
+  #qr{background:#fff;padding:14px;border-radius:14px;display:inline-block}
+  #qr canvas,#qr img{display:block}
+  .url{margin-top:12px;font-size:17px;color:var(--dim);direction:ltr}
+  .roster{flex:1;max-width:640px}
+  .roster h2{font-size:22px;margin-bottom:12px;color:var(--dim)}
+  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{
+    padding:8px 16px;border-radius:20px;font-size:18px;font-weight:600;
+    color:#0d1420;animation:pop .3s ease-out;
+  }
+  @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* ---------- סיום ---------- */
+  #finish{flex:1;overflow-y:auto;padding:26px 34px}
+  #finish h1{font-size:40px;color:var(--accent);margin-bottom:20px;text-align:center}
+  .podium{display:flex;justify-content:center;align-items:flex-end;gap:22px;margin-bottom:34px}
+  .pod{text-align:center}
+  .pod .plate{border-radius:12px 12px 0 0;width:150px;display:flex;align-items:flex-end;
+              justify-content:center;padding-bottom:10px;font-size:30px;font-weight:700;color:#0d1420}
+  .pod .who{font-size:21px;font-weight:700;margin-bottom:8px}
+  .pod .pts{font-size:16px;color:var(--dim);margin-top:6px}
+  .awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .award{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+         display:flex;gap:14px;align-items:center}
+  .award .ic{font-size:32px;flex:none}
+  .award .tt{font-size:19px;font-weight:700}
+  .award .ds{font-size:14px;color:var(--dim);margin-top:2px}
+  .award .wn{font-size:17px;font-weight:700;margin-top:4px}
+
+  /* ---------- פקדים ---------- */
+  .ctl{
+    flex:none;display:flex;gap:10px;align-items:center;padding:10px 20px;
+    background:var(--panel);border-top:1px solid var(--line);
+  }
+  button{
+    font-family:inherit;font-size:17px;font-weight:600;padding:10px 22px;border:none;
+    border-radius:9px;background:var(--accent);color:#231702;cursor:pointer;
+  }
+  button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+  button.danger{background:#3a1c1e;color:#ff9ea1;border:1px solid #5c2b2e}
+  button:disabled{opacity:.4;cursor:default}
+  .hint{font-size:15px;color:var(--dim)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">פטור או היתר</span>
+  <span class="crumb" id="crumb">לובי</span>
+  <span class="roundtag" id="roundtag"></span>
+  <span class="spacer"></span>
+  <span class="answered" id="answered"></span>
+  <span class="timer" id="timer"></span>
+</header>
+
+<!-- ===================== לובי ===================== -->
+<div id="lobby">
+  <div class="joinbox">
+    <h1>סורקים ומצטרפים</h1>
+    <p>תחיקת הבנייה · שיעור 9 · פטור מהיתר בנייה</p>
+    <div id="qr"></div>
+    <div class="url" id="joinurl"></div>
+  </div>
+  <div class="roster">
+    <h2>מצטרפים (<span id="cnt">0</span>)</h2>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<!-- ===================== משחק ===================== -->
+<main id="play" class="hidden">
+  <div class="pane right">
+    <div class="qtext" id="qtext"></div>
+    <div class="opts" id="opts"></div>
+    <div class="explain hidden" id="explain"></div>
+  </div>
+  <div class="pane left">
+    <div class="casefig"><img id="caseimg" alt=""></div>
+    <div class="casetitle" id="casetitle"></div>
+    <div class="casedesc" id="casedesc"></div>
+  </div>
+</main>
+
+<!-- ===================== סיום ===================== -->
+<div id="finish" class="hidden">
+  <h1>סיכום</h1>
+  <div class="podium" id="podium"></div>
+  <div class="awards" id="awardgrid"></div>
+</div>
+
+<div class="bars" id="bars"></div>
+
+<div class="ctl">
+  <button id="btnStart">התחלת המשחק</button>
+  <button id="btnNext" class="hidden">חשיפת התשובה</button>
+  <button id="btnSkip" class="ghost hidden">דילוג</button>
+  <span class="spacer"></span>
+  <span class="hint" id="hint"></span>
+  <button id="btnReset" class="danger ghost">איפוס עמוק</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script src="js/gameData.js"></script>
+<script>
+/* =====================================================================
+   מסך המרצה. הוא הבעלים היחיד של הלוגיקה: הוא פותח שאלה, כותב ל-Firebase
+   רק את מה שהטלפונים צריכים לראות (בלי התשובה הנכונה), ומחשב את הניקוד
+   בחשיפה. כך אי אפשר לשלוף את התשובות מקוד הטלפון.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCN3vH0UjDsDEErNHJLc22jrWQNTlMRXTU",
+  databaseURL: "https://erez-ptor-heter-game-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "erez-ptor-heter-game",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const G = window.gameData;
+const CFG = G.meta;
+// רשימת השאלות כרצף שטוח, עם הפניה למקרה שממנו הן באות
+const FLOW = [];
+G.cases.forEach((c, ci) => c.questions.forEach((q, qi) => FLOW.push({ ci, qi, c, q })));
+
+let players = {};      // מצב השחקנים כפי שהוא ב-DB
+let cur = null;        // מצב המשחק הנוכחי
+let tickHandle = null;
+let revealing = false; // שומר מפני חשיפה כפולה (שעון + "כולם ענו" יחד)
+
+const $ = (id) => document.getElementById(id);
+
+/* ---------------------- כתובת ההצטרפות + QR ---------------------- */
+const joinUrl = location.href.replace(/index\.html.*$/, "").replace(/\/?$/, "/") + "play.html";
+$("joinurl").textContent = joinUrl;
+new QRious({ element: Object.assign(document.createElement("canvas"), {}), value: joinUrl });
+(function drawQr() {
+  const cv = document.createElement("canvas");
+  $("qr").appendChild(cv);
+  new QRious({ element: cv, value: joinUrl, size: 300, level: "M" });
+})();
+
+/* ---------------------- מעקב אחרי ה-DB ---------------------- */
+db.ref("players").on("value", (s) => { players = s.val() || {}; renderRoster(); renderBars(); countAnswers(); });
+db.ref("game").on("value", (s) => { cur = s.val() || { state: "lobby" }; renderState(); });
+
+/* ---------------------- ציור המצב ---------------------- */
+function renderRoster() {
+  const list = Object.values(players);
+  $("cnt").textContent = list.length;
+  $("chips").innerHTML = list
+    .map((p) => `<span class="chip" style="background:${p.color}">${esc(p.name)}</span>`)
+    .join("");
+}
+
+function renderState() {
+  const st = cur.state || "lobby";
+  $("lobby").classList.toggle("hidden", st !== "lobby");
+  $("play").classList.toggle("hidden", st !== "question" && st !== "reveal");
+  $("finish").classList.toggle("hidden", st !== "finished");
+  $("bars").classList.toggle("hidden", st === "lobby");
+  $("btnStart").classList.toggle("hidden", st !== "lobby");
+  $("btnNext").classList.toggle("hidden", st === "lobby" || st === "finished");
+  $("btnSkip").classList.toggle("hidden", st !== "question");
+
+  if (st === "lobby") {
+    $("crumb").textContent = "לובי";
+    $("roundtag").textContent = "";
+    $("timer").textContent = "";
+    $("answered").textContent = "";
+    $("hint").textContent = Object.keys(players).length
+      ? "אפשר להתחיל"
+      : "ממתין למצטרפים";
+    stopTick();
+    return;
+  }
+  if (st === "finished") {
+    stopTick(); renderFinish();
+    $("crumb").textContent = "סיום";
+    $("roundtag").textContent = "";
+    $("timer").textContent = "";
+    $("answered").textContent = "";
+    return;
+  }
+
+  const item = FLOW[cur.idx];
+  if (!item) return;
+  $("crumb").textContent = `מקרה ${item.ci + 1} מתוך ${G.cases.length}`;
+  const r = G.rounds[item.q.round - 1];
+  $("roundtag").textContent = `סבב ${r.n}: ${r.name}`;
+  $("caseimg").src = item.c.image;
+  $("caseimg").alt = item.c.title;
+  $("casetitle").textContent = item.c.title;
+  $("casedesc").textContent = item.c.description;
+  $("qtext").textContent = item.q.q;
+
+  // מציגים בדיוק את הסדר המעורבב שהטלפונים קיבלו
+  const perm = cur.perm || item.q.options.map((_, i) => i);
+  const shown = st === "reveal";
+  const rightSlot = perm.indexOf(item.q.correct);
+  $("opts").innerHTML = perm
+    .map((orig, i) => {
+      const cls = shown ? (i === rightSlot ? "opt right" : "opt dim") : "opt";
+      return `<div class="${cls}"><span class="num">${i + 1}</span><span>${esc(item.q.options[orig])}</span></div>`;
+    })
+    .join("");
+  $("explain").classList.toggle("hidden", !shown);
+  $("explain").textContent = item.q.explanation;
+
+  if (shown) {
+    stopTick();
+    $("timer").textContent = "";
+    $("btnNext").textContent = cur.idx + 1 >= FLOW.length ? "למסך הסיום" : "לשאלה הבאה";
+    $("hint").textContent = "";
+  } else {
+    $("btnNext").textContent = "חשיפת התשובה";
+    startTick();
+  }
+  countAnswers();
+}
+
+function countAnswers() {
+  if (!cur || cur.state !== "question") { $("answered").textContent = ""; return; }
+  const total = Object.keys(players).length;
+  const key = "q" + cur.idx;
+  const done = Object.values(players).filter((p) => p.answers && p.answers[key]).length;
+  $("answered").textContent = total ? `ענו ${done} מתוך ${total}` : "";
+  // כשכולם ענו אין טעם להמשיך לספור
+  if (total && done >= total && cur.state === "question") reveal();
+}
+
+/* ---------------------- שעון ---------------------- */
+function startTick() {
+  stopTick();
+  tickHandle = setInterval(() => {
+    const left = Math.max(0, Math.ceil((cur.endsAt - Date.now()) / 1000));
+    $("timer").textContent = left;
+    $("timer").classList.toggle("low", left <= 5);
+    if (left <= 0) reveal();
+  }, 200);
+}
+function stopTick() { if (tickHandle) { clearInterval(tickHandle); tickHandle = null; } }
+
+/* ---------------------- עמודות הניקוד ---------------------- */
+function renderBars() {
+  const list = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
+  if (!list.length) { $("bars").innerHTML = ""; return; }
+  const top = Math.max(100, ...list.map((p) => p.score || 0));
+  const bottom = Math.min(0, ...list.map((p) => p.score || 0));
+  const span = top - bottom || 1;
+  $("bars").innerHTML = list
+    .map((p) => {
+      const h = Math.round((((p.score || 0) - bottom) / span) * 100);
+      const t = p.lastDelta;
+      const tick = t ? `<span class="tick" style="color:${t > 0 ? "#28c076" : "#e5484d"}">${t > 0 ? "+" : ""}${t}</span>` : "";
+      return `<div class="bar">
+        <span class="val"><span>${p.score || 0}</span>${tick}</span>
+        <div class="col" style="height:${h}%;background:${p.color}"></div>
+        <span class="nm">${esc(p.name)}</span>
+      </div>`;
+    })
+    .join("");
+}
+
+/* ---------------------- מהלך המשחק ---------------------- */
+function openQuestion(idx) {
+  const item = FLOW[idx];
+  const endsAt = Date.now() + CFG.questionSeconds * 1000;
+  // ערבוב סדר האפשרויות בכל שאלה, כדי שהתשובה הנכונה לא תשב תמיד באותו מקום.
+  // perm[i] = האינדקס המקורי של האפשרות שמוצגת במקום i.
+  const perm = item.q.options.map((_, i) => i);
+  for (let i = perm.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [perm[i], perm[j]] = [perm[j], perm[i]];
+  }
+  revealing = false;
+  // מה שנשלח לטלפונים: בלי correct, בלי explanation
+  db.ref("game").set({
+    state: "question",
+    idx,
+    endsAt,
+    perm,
+    seconds: CFG.questionSeconds,
+    round: item.q.round,
+    roundName: G.rounds[item.q.round - 1].name,
+    caseTitle: item.c.title,
+    caseNo: item.ci + 1,
+    caseTotal: G.cases.length,
+    q: item.q.q,
+    options: perm.map((i) => item.q.options[i]),
+  });
+}
+
+function reveal() {
+  if (!cur || cur.state !== "question" || revealing) return;
+  revealing = true;
+  stopTick();
+  const idx = cur.idx;
+  const item = FLOW[idx];
+  const perm = cur.perm || item.q.options.map((_, i) => i);
+  const rightSlot = perm.indexOf(item.q.correct);
+  const key = "q" + idx;
+  const updates = {};
+  Object.entries(players).forEach(([pid, p]) => {
+    const a = p.answers && p.answers[key];
+    let delta = 0, correct = false;
+    if (a && typeof a.opt === "number") {
+      correct = a.opt === rightSlot;
+      if (correct) {
+        // דעיכה מעריכית: השניות הראשונות שוות הרבה יותר מהאחרונות
+        const usedFrac = Math.min(1, a.ms / (CFG.questionSeconds * 1000));
+        delta = CFG.basePoints + Math.round(CFG.maxSpeedBonus * Math.exp(-CFG.speedDecay * usedFrac));
+      } else {
+        delta = CFG.wrongPenalty;
+      }
+    }
+    updates[`players/${pid}/answers/${key}/correct`] = correct;
+    updates[`players/${pid}/answers/${key}/pts`] = delta;
+    updates[`players/${pid}/score`] = (p.score || 0) + delta;
+    updates[`players/${pid}/lastDelta`] = delta;
+  });
+  updates["game/state"] = "reveal";
+  db.ref().update(updates);
+}
+
+function next() {
+  if (cur.state === "question") { reveal(); return; }
+  const n = cur.idx + 1;
+  if (n >= FLOW.length) { db.ref("game").update({ state: "finished" }); return; }
+  db.ref("players").once("value").then((s) => {
+    const up = {};
+    Object.keys(s.val() || {}).forEach((pid) => { up[`players/${pid}/lastDelta`] = null; });
+    return db.ref().update(up);
+  }).then(() => openQuestion(n));
+}
+
+/* ---------------------- מסך סיום ותארים ---------------------- */
+function stats() {
+  return Object.entries(players).map(([pid, p]) => {
+    const ans = p.answers || {};
+    const rows = FLOW.map((f, i) => ({ f, i, a: ans["q" + i] })).filter((r) => r.a);
+    const right = rows.filter((r) => r.a.correct);
+    const times = right.map((r) => r.a.ms);
+    let streak = 0, best = 0;
+    FLOW.forEach((f, i) => {
+      const a = ans["q" + i];
+      if (a && a.correct) { streak++; best = Math.max(best, streak); } else { streak = 0; }
+    });
+    const ptsIn = (pred) => rows.filter((r) => pred(r)).reduce((s, r) => s + (r.a.pts || 0), 0);
+    const half = Math.floor(FLOW.length / 2);
+    return {
+      pid, name: p.name, color: p.color, score: p.score || 0,
+      answered: rows.length,
+      accuracy: rows.length ? right.length / rows.length : 0,
+      avgMs: times.length ? times.reduce((a, b) => a + b, 0) / times.length : Infinity,
+      bestStreak: best,
+      round1: ptsIn((r) => r.f.q.round === 1),
+      round2: ptsIn((r) => r.f.q.round === 2),
+      round3: ptsIn((r) => r.f.q.round === 3),
+      firstHalf: ptsIn((r) => r.i < half),
+      secondHalf: ptsIn((r) => r.i >= half),
+      opener: ptsIn((r) => r.f.ci < 3),
+      closer: ptsIn((r) => r.f.ci >= G.cases.length - 3),
+      full: rows.length === FLOW.length,
+    };
+  });
+}
+
+// כל תואר לשחקן אחר, בסדר שנקבע ב-gameData, כדי שכמה שיותר אנשים יקבלו משהו
+function assignAwards(rows) {
+  const taken = new Set();
+  const pickers = {
+    first:      (r) => byMax(r, (x) => x.score, 0),
+    second:     (r) => rank(r, 1),
+    third:      (r) => rank(r, 2),
+    fastest:    (r) => byMin(r.filter((x) => x.avgMs < Infinity), (x) => x.avgMs),
+    accurate:   (r) => byMax(r.filter((x) => x.answered >= 5), (x) => x.accuracy, 0),
+    streak:     (r) => byMax(r, (x) => x.bestStreak, 2),
+    regulator:  (r) => byMax(r, (x) => x.round3, 1),
+    numbers:    (r) => byMax(r, (x) => x.round2, 1),
+    comeback:   (r) => byMax(r, (x) => x.secondHalf - x.firstHalf, 1),
+    steady:     (r) => byMax(r.filter((x) => x.accuracy >= 0.7), (x) => x.avgMs === Infinity ? -1 : x.avgMs, 0),
+    brave:      (r) => byMax(r.filter((x) => x.full), (x) => x.score, -1e9),
+    opener:     (r) => byMax(r, (x) => x.opener, 1),
+    closer:     (r) => byMax(r, (x) => x.closer, 1),
+    identifier: (r) => byMax(r, (x) => x.round1, 1),
+  };
+  const sorted = [...rows].sort((a, b) => b.score - a.score);
+  function rank(r, i) { const c = sorted.filter((x) => !taken.has(x.pid)); return sorted[i] && !taken.has(sorted[i].pid) ? sorted[i] : c[0]; }
+  function byMax(r, f, min) {
+    const c = r.filter((x) => !taken.has(x.pid) && (min === undefined || f(x) > min));
+    return c.sort((a, b) => f(b) - f(a))[0];
+  }
+  function byMin(r, f) {
+    const c = r.filter((x) => !taken.has(x.pid));
+    return c.sort((a, b) => f(a) - f(b))[0];
+  }
+  const out = [];
+  G.awards.forEach((aw) => {
+    const w = pickers[aw.id] && pickers[aw.id](rows);
+    if (w) { taken.add(w.pid); out.push({ aw, w }); }
+  });
+  return out;
+}
+
+function renderFinish() {
+  const rows = stats();
+  const won = assignAwards(rows);
+  const top3 = [...rows].sort((a, b) => b.score - a.score).slice(0, 3);
+  const heights = [150, 118, 92];
+  const order = [1, 0, 2]; // שני, ראשון, שלישי
+  $("podium").innerHTML = order
+    .filter((i) => top3[i])
+    .map((i) => {
+      const p = top3[i];
+      return `<div class="pod">
+        <div class="who">${esc(p.name)}</div>
+        <div class="plate" style="height:${heights[i]}px;background:${p.color}">${i + 1}</div>
+        <div class="pts">${p.score} נקודות</div>
+      </div>`;
+    })
+    .join("");
+
+  $("awardgrid").innerHTML = won
+    .filter((x) => !["first", "second", "third"].includes(x.aw.id))
+    .map((x) => `<div class="award">
+      <span class="ic">${x.aw.icon}</span>
+      <span>
+        <div class="tt">${x.aw.title}</div>
+        <div class="ds">${esc(x.aw.desc)}</div>
+        <div class="wn" style="color:${x.w.color}">${esc(x.w.name)}</div>
+      </span>
+    </div>`)
+    .join("");
+}
+
+/* ---------------------- פקדים ---------------------- */
+$("btnStart").onclick = () => {
+  if (!Object.keys(players).length) { $("hint").textContent = "אף אחד עוד לא הצטרף"; return; }
+  openQuestion(0);
+};
+$("btnNext").onclick = () => {
+  if (cur.state === "finished") return;
+  next();
+};
+$("btnSkip").onclick = () => reveal();
+$("btnReset").onclick = () => {
+  if (!confirm("איפוס עמוק ימחק את כל השחקנים ואת כל הניקוד של הכיתה הנוכחית. להמשיך?")) return;
+  db.ref().set({ game: { state: "lobby" } });
+};
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" || e.code === "ArrowLeft") { e.preventDefault(); if (cur && cur.state !== "lobby" && cur.state !== "finished") next(); }
+});
+
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+</script>
+</body>
+</html>
