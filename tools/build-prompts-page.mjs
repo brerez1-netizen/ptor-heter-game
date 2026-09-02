@@ -34,6 +34,8 @@ half of the roof surface. Four square timber posts stand on a concrete patio flo
 
 The gaps between the slats are the single most important detail: they must be
 obviously open, evenly distributed, and impossible to mistake for a solid roof.
+CRITICAL: the spaces between the slats are empty air. There is no glass, no polycarbonate, no transparent sheet, no mesh and no roofing material of any kind between the slats or above them. The exact same sky colour shows straight through the gaps, so the roof reads as half open sky and half timber. Nothing spans between one slat and the next.
+
 Low shrubs at the base of the corner posts.`,
   },
   {

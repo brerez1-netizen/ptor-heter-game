@@ -44,6 +44,8 @@ no readable writing anywhere in the image.
 
 הפרט שהשאלה נשענת עליו: **המרווחים בין השלבים**, מחולקים שווה ומהווים לפחות 40% מהמשטח.
 
+> **הגרסה הראשונה נפסלה**: המודל מילא את המרווחים בזיגוג תכלת, והתמונה נקראה כגג מזוגג ולא כמרווחים פתוחים. זה סותר ישירות את התשובה לשאלה, ולכן נוסף הסעיף שמתחיל ב-CRITICAL. מקרה 1 הוא היחיד שנשאר בינתיים על השרטוט.
+
 ```
 A wooden pergola in the private back garden of a single-family house, attached
 along one side to the house wall. The pergola roof is made of evenly spaced wooden
@@ -52,6 +54,13 @@ half of the roof surface. Four square timber posts stand on a concrete patio flo
 
 The gaps between the slats are the single most important detail: they must be
 obviously open, evenly distributed, and impossible to mistake for a solid roof.
+
+CRITICAL: the spaces between the slats are empty air. There is no glass, no
+polycarbonate, no transparent sheet, no mesh and no roofing material of any kind
+between the slats or above them. The exact same sky colour shows straight through
+the gaps, so the roof reads as half open sky and half timber. Nothing spans between
+one slat and the next.
+
 Low shrubs at the base of the corner posts.
 ```
 

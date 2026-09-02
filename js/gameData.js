@@ -82,7 +82,7 @@ window.gameData = {
     {
       id: "machsan",
       title: "מחסן גינה מעץ",
-      image: "images/case2.svg",
+      image: "images/case2.jpg",
       description:
         "בחצר של בית צמוד קרקע הוצב מחסן עץ מוכן בשטח 5.5 מ\"ר וגובה 2 מ'. הלקוח מבקש להעביר אליו נקודת חשמל, ברז ונקודת ניקוז לכיור קטן.",
       questions: [
@@ -132,7 +132,7 @@ window.gameData = {
     {
       id: "gader",
       title: "גדר בגבול המגרש",
-      image: "images/case3.svg",
+      image: "images/case3.jpg",
       description:
         "לקוח מקים גדר בלוקים מטויחת בגובה 1.4 מ' לאורך הגבול האחורי של המגרש. הגדר רצופה ואטומה לכל אורכה.",
       questions: [
@@ -182,7 +182,7 @@ window.gameData = {
     {
       id: "mazgan",
       title: "מזגן על החזית לרחוב",
-      image: "images/case4.svg",
+      image: "images/case4.jpg",
       description:
         "בעל דירה התקין מעבה של מזגן בתפוקה 24,000 BTU על הקיר החיצוני של הסלון, בחזית הפונה לרחוב, מעל חלון הראווה של חנות בקומת הקרקע.",
       questions: [
@@ -232,7 +232,7 @@ window.gameData = {
     {
       id: "solari",
       title: "פאנלים סולאריים על גג רעפים",
-      image: "images/case5.svg",
+      image: "images/case5.jpg",
       description:
         "בעל בית פרטי מתקין מערכת פוטו-וולטאית על גג הרעפים. הפאנלים מונחים צמודים לשיפוע הרעפים ובאותו כיוון, בלי הגבהה ובלי חריגה מקווי הגג.",
       questions: [
@@ -282,7 +282,7 @@ window.gameData = {
     {
       id: "sgirat-mirpeset",
       title: "סגירת מרפסת בקירוי אטום",
-      image: "images/case6.svg",
+      image: "images/case6.jpg",
       description:
         "דייר בבניין מגורים סגר את מרפסת השמש בפרופיל בלגי ובזכוכית, והחליף את הפרגולה שמעליה בקירוי פוליקרבונט אטום לכל שטחה.",
       questions: [
@@ -332,7 +332,7 @@ window.gameData = {
     {
       id: "soragim",
       title: "סורגים בחלונות דירה",
-      image: "images/case7.svg",
+      image: "images/case7.jpg",
       description:
         "משפחה בקומת קרקע מתקינה סורגי מתכת קבועים בכל חלונות הדירה, כולל בחדרי השינה ובממ\"ד.",
       questions: [
@@ -382,7 +382,7 @@ window.gameData = {
     {
       id: "mivne-zmani",
       title: "מכולה זמנית באתר",
-      image: "images/case8.svg",
+      image: "images/case8.jpg",
       description:
         "עסק מציב מכולת אחסון בשטח 15 מ\"ר בחצר, לתקופה של כשלושה חודשים בזמן שיפוץ המבנה הראשי. המכולה אינה משמשת למגורים.",
       questions: [
@@ -432,7 +432,7 @@ window.gameData = {
     {
       id: "shimur",
       title: "מצללה תקנית בבית לשימור",
-      image: "images/case9.svg",
+      image: "images/case9.jpg",
       description:
         "בעלת דירה בבניין בתל אביב מבקשת להקים מצללת עץ בשטח 16 מ\"ר בחצר. כל המידות בתחום המותר והקירוי פתוח כנדרש. הבניין מופיע ברשימת המבנים לשימור.",
       questions: [
@@ -482,7 +482,7 @@ window.gameData = {
     {
       id: "gagon",
       title: "גגון מעל כניסה לבית",
-      image: "images/case10.svg",
+      image: "images/case10.jpg",
       description:
         "מותקן גגון אלומיניום קשיח מעל דלת הכניסה לבית פרטי. הגגון בולט 1.8 מ' מקיר הבית ושטחו הכולל 26 מ\"ר.",
       questions: [
