@@ -32,7 +32,7 @@ window.gameData = {
     {
       id: "matzlela",
       title: "מצללת עץ בחצר",
-      image: "images/case1.svg",
+      image: "images/case1.jpg",
       description:
         "לקוח בנה בחצר הפרטית מצללת עץ בשטח 24 מ\"ר. הקירוי עשוי לוחות עץ עם מרווחים שווים ביניהם, והוא מעוגן לרצפת הבטון של הפטיו.",
       questions: [
