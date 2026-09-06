@@ -181,13 +181,12 @@ function openQ() {
   $("pts").textContent = st.score;
   $("prog").style.width = (st.idx / FLOW.length) * 100 + "%";
 
-  // התמונה והתיאור מוצגים רק בשאלה הראשונה של כל מקרה, כדי לא לבזבז מסך
-  const head = it.qi === 0
-    ? `<div class="fig"><img src="${it.c.image}" alt="${esc(it.c.title)}"></div>
-       <div class="ctitle">${esc(it.c.title)}</div>
-       <div class="cdesc">${esc(it.c.description)}</div>`
-    : `<div class="ctitle">${esc(it.c.title)}</div>
-       <div class="cdesc">${esc(it.c.description)}</div>`;
+  // התמונה נשארת בכל שלוש השאלות של המקרה. שאלה על מבנה בלי לראות אותו היא
+  // שאלה על הזיכרון של השאלה הקודמת, לא על המבנה
+  const head =
+    `<div class="fig"><img src="${it.c.image}" alt="${esc(it.c.title)}"></div>
+     <div class="ctitle">${esc(it.c.title)}</div>
+     <div class="cdesc">${esc(it.c.description)}</div>`;
 
   $("stage").innerHTML = head +
     `<div class="qtext">${esc(it.q.q)}</div>
