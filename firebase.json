@@ -1,0 +1,5 @@
+{
+  "database": [
+    { "instance": "erez-ptor-heter-game-default-rtdb", "rules": "database.rules.json" }
+  ]
+}
